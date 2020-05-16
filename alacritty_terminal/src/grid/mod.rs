@@ -962,7 +962,7 @@ impl<'a, T: Copy + 'a> Iterator for DisplayIter<'a, T> {
         // Get the next item.
         let item = Some(Indexed {
             inner: self.grid.raw[self.offset][self.col],
-            line: self.grid.lines - self.line - 1,
+            line: self.line,
             column: self.col,
         });
 

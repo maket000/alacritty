@@ -479,7 +479,7 @@ impl<'a, C> Iterator for RenderableCellsIter<'a, C> {
                     let cell = Indexed {
                         inner: self.grid[buffer_point.line][buffer_point.col],
                         column: self.cursor.point.col,
-                        line: self.grid.num_lines() - self.cursor.point.line - 1,
+                        line: self.cursor.point.line,
                     };
 
                     let mut renderable_cell =
