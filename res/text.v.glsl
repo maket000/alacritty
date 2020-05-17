@@ -41,6 +41,9 @@ uniform vec4 projection;
 
 uniform int backgroundPass;
 
+// hardcoding this because the main program is a nightmare
+// change it based on how tall you screen, or face dire consequences
+int maxlines = 60;
 
 void main()
 {
@@ -55,13 +58,21 @@ void main()
     // Position of cell from top-left
     vec2 cellPosition = cellDim * gridCoords;
 
+    // back on my bullshit
+    // flop
+    cellPosition.y = cellDim.y * maxlines - cellPosition.y;
+    // tasteful fade-out
+    float fadeScale = (maxlines - gridCoords.y) / maxlines;
+    cellPosition.x *= fadeScale;
+    projectionOffset.x += (1 - fadeScale);
+
     if (backgroundPass != 0) {
         vec2 finalPosition = cellPosition + cellDim * position;
         gl_Position = vec4(projectionOffset + projectionScale * finalPosition, 0.0, 1.0);
 
         TexCoords = vec2(0, 0);
     } else {
-        vec2 glyphSize = glyph.zw;
+        vec2 glyphSize = glyph.zw * fadeScale;
         vec2 glyphOffset = glyph.xy;
         glyphOffset.y = cellDim.y - glyphOffset.y;
 
@@ -72,7 +83,11 @@ void main()
         vec2 uvSize = uv.zw;
         TexCoords = uvOffset + position * uvSize;
     }
-
+    // rotation of uv coordinates?? (this does not work)
+    // float angle = 4 * 3.14159 * gridCoords.y / maxlines;
+    // float sin_value = sin(angle);
+    // float cos_value = cos(angle);
+    // TexCoords = TexCoords * mat2(cos_value, sin_value, -sin_value, cos_value);
     bg = vec4(backgroundColor.rgb / 255.0, backgroundColor.a);
     fg = textColor / vec3(255.0, 255.0, 255.0);
     colored = coloredGlyph;
