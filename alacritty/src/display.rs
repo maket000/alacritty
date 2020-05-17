@@ -127,9 +127,16 @@ pub struct Display {
     meter: Meter,
     #[cfg(not(any(target_os = "macos", windows)))]
     is_x11: bool,
+    creation_time: Instant,
 }
 
 impl Display {
+    pub fn get_time(&self) -> f32 {
+	let time0 = Instant::now().duration_since(self.creation_time);
+        let time = time0.as_secs() as f32 + time0.subsec_nanos() as f32 * 1e-9f32;
+        return time;
+    }
+
     pub fn new(config: &Config, event_loop: &EventLoop<Event>) -> Result<Display, Error> {
         // Guess DPR based on first monitor.
         let estimated_dpr =
@@ -221,7 +228,7 @@ impl Display {
 
         // Clear screen.
         let background_color = config.colors.primary.background;
-        renderer.with_api(&config, &size_info, |api| {
+        renderer.with_api(&config, &size_info, 0f32, |api| {
             api.clear(background_color);
         });
 
@@ -234,7 +241,7 @@ impl Display {
             // actually draw something into it and commit those changes.
             if is_x11 {
                 window.swap_buffers();
-                renderer.with_api(&config, &size_info, |api| {
+                renderer.with_api(&config, &size_info, 0f32, |api| {
                     api.finish();
                 });
             }
@@ -272,6 +279,7 @@ impl Display {
             is_x11,
             #[cfg(not(any(target_os = "macos", windows)))]
             wayland_event_queue,
+	    creation_time: Instant::now(),
         })
     }
 
@@ -402,6 +410,7 @@ impl Display {
         mods: ModifiersState,
     ) {
         let grid_cells: Vec<RenderableCell> = terminal.renderable_cells(config).collect();
+	let t = self.get_time();
         let visual_bell_intensity = terminal.visual_bell.intensity();
         let background_color = terminal.background_color();
         let metrics = self.glyph_cache.font_metrics();
@@ -425,7 +434,7 @@ impl Display {
         // Drop terminal as early as possible to free lock.
         drop(terminal);
 
-        self.renderer.with_api(&config, &size_info, |api| {
+        self.renderer.with_api(&config, &size_info, t, |api| {
             api.clear(background_color);
         });
 
@@ -436,7 +445,7 @@ impl Display {
         {
             let _sampler = self.meter.sampler();
 
-            self.renderer.with_api(&config, &size_info, |mut api| {
+            self.renderer.with_api(&config, &size_info, t, |mut api| {
                 // Iterate over all non-empty cells in the grid.
                 for cell in grid_cells {
                     // Update URL underlines.
@@ -509,7 +518,7 @@ impl Display {
             // Relay messages to the user.
             let mut offset = 1;
             for message_text in text.iter().rev() {
-                self.renderer.with_api(&config, &size_info, |mut api| {
+                self.renderer.with_api(&config, &size_info, t, |mut api| {
                     api.render_string(
                         &message_text,
                         Line(size_info.lines().saturating_sub(offset)),
@@ -528,7 +537,7 @@ impl Display {
         if config.render_timer() {
             let timing = format!("{:.3} usec", self.meter.average());
             let color = Rgb { r: 0xd5, g: 0x4e, b: 0x53 };
-            self.renderer.with_api(&config, &size_info, |mut api| {
+            self.renderer.with_api(&config, &size_info, t, |mut api| {
                 api.render_string(&timing[..], size_info.lines() - 2, glyph_cache, Some(color));
             });
         }
@@ -546,7 +555,7 @@ impl Display {
                 // On X11 `swap_buffers` does not block for vsync. However the next OpenGl command
                 // will block to synchronize (this is `glClear` in Alacritty), which causes a
                 // permanent one frame delay.
-                self.renderer.with_api(&config, &size_info, |api| {
+                self.renderer.with_api(&config, &size_info, t, |api| {
                     api.finish();
                 });
             }

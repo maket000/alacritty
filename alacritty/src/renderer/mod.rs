@@ -116,6 +116,9 @@ pub struct TextShaderProgram {
     /// Cell dimensions (pixels).
     u_cell_dim: GLint,
 
+    /// Time
+    u_time: GLint,
+
     /// Background pass flag.
     ///
     /// Rendering is split into two passes; 1 for backgrounds, and one for text.
@@ -776,7 +779,7 @@ impl QuadRenderer {
         }
     }
 
-    pub fn with_api<F, T, C>(&mut self, config: &Config<C>, props: &term::SizeInfo, func: F) -> T
+    pub fn with_api<F, T, C>(&mut self, config: &Config<C>, props: &term::SizeInfo, time: f32, func: F) -> T
     where
         F: FnOnce(RenderApi<'_, C>) -> T,
     {
@@ -789,6 +792,7 @@ impl QuadRenderer {
         unsafe {
             gl::UseProgram(self.program.id);
             self.program.set_term_uniforms(props);
+	    self.program.set_time(time);
 
             gl::BindVertexArray(self.vao);
             gl::BindBuffer(gl::ELEMENT_ARRAY_BUFFER, self.ebo);
@@ -1198,10 +1202,11 @@ impl TextShaderProgram {
         }
 
         // get uniform locations
-        let (projection, cell_dim, background) = unsafe {
+        let (projection, cell_dim, time, background) = unsafe {
             (
                 gl::GetUniformLocation(program, cptr!(b"projection\0")),
                 gl::GetUniformLocation(program, cptr!(b"cellDim\0")),
+                gl::GetUniformLocation(program, cptr!(b"time\0")),
                 gl::GetUniformLocation(program, cptr!(b"backgroundPass\0")),
             )
         };
@@ -1212,6 +1217,7 @@ impl TextShaderProgram {
             id: program,
             u_projection: projection,
             u_cell_dim: cell_dim,
+	    u_time: time,
             u_background: background,
         };
 
@@ -1247,6 +1253,12 @@ impl TextShaderProgram {
         unsafe {
             gl::Uniform2f(self.u_cell_dim, props.cell_width, props.cell_height);
         }
+    }
+
+    fn set_time(&self, time: f32) {
+	unsafe {
+            gl::Uniform1f(self.u_time, time);
+	}
     }
 
     fn set_background_pass(&self, background_pass: bool) {
