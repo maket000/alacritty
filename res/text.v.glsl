@@ -90,12 +90,12 @@ void main() {
     vec2 cellPosition = cellDim * gridCoords;
 
     // fix your back
-    // cellPosition.y = cellDim.y * maxlines - cellPosition.y;
+    cellPosition.y = cellDim.y * maxlines - cellPosition.y;
 
     // far out, dude
     float fadeScale = (maxlines - gridCoords.y) / maxlines;
-    // cellPosition.x *= fadeScale;
-    // projectionOffset.x += (1 - fadeScale);
+    cellPosition.x *= fadeScale;
+    projectionOffset.x += (1 - fadeScale);
 
     vec2 finalPosition;
     vec2 glyphSize;
@@ -104,19 +104,19 @@ void main() {
         finalPosition = cellPosition + cellDim * position;
     } else {
         glyphSize = glyph.zw;
-        // glyphSize = glyph.zw * fadeScale;
-        // glyphSize = glyph.zw * fadeScale * (1.5 + 0.5 * sin(time + cellPosition.x / 10));
+        glyphSize = glyph.zw * fadeScale;
+        glyphSize = glyph.zw * fadeScale * (1.5 + 0.5 * sin(time + cellPosition.x / 10));
         glyphOffset = glyph.xy;
         glyphOffset.y = cellDim.y - glyphOffset.y;
         finalPosition = cellPosition + glyphSize * position + glyphOffset;
     }
 
     // wobble
-    // finalPosition.x += 0.5 * sin(sin(finalPosition.x) + finalPosition.y * 0.1 * time);
-    // finalPosition.y += 0.5 * sin(sin(finalPosition.y) + finalPosition.x * 0.1 * -time);
+    finalPosition.x += 0.5 * sin(sin(finalPosition.x) + finalPosition.y * 0.1 * time);
+    finalPosition.y += 0.5 * sin(sin(finalPosition.y) + finalPosition.x * 0.1 * -time);
 
     // animated wave
-    // finalPosition.y += 10 * sin((finalPosition.x + time * 30) * 0.05);
+    finalPosition.y += 10 * sin((finalPosition.x + time * 30) * 0.05);
 
     if (backgroundPass != 0) {
         gl_Position = vec4(projectionOffset + projectionScale * finalPosition, 0.0, 1.0);
@@ -134,28 +134,28 @@ void main() {
     colored = coloredGlyph;
 
     // cool colours
-    // float r = sin(time * 0.001);
-    // float t = r * r * 400;
-    // float x = cellPosition.x;
-    // float y = cellPosition.y;
-    // float p0 = sin(x * 0.002 + t);
-    // float p1 = sin(10*(x*0.0005*sin(t*0.5)+y*0.00005*cos(t*0.3))+t);
-    // float cx = x*0.0005 - 0.5 + 0.5 * sin(t*2);
-    // float cy = y*0.0005 - 0.5 + 0.5 * cos(t*3.3333);
-    // float p2 = sin(sqrt(cx*cx+cy*cy)*3+1);
-    // float p = (p0 + p1 + p2);
+    float r = sin(time * 0.001);
+    float t = r * r * 400;
+    float x = cellPosition.x;
+    float y = cellPosition.y;
+    float p0 = sin(x * 0.002 + t);
+    float p1 = sin(10*(x*0.0005*sin(t*0.5)+y*0.00005*cos(t*0.3))+t);
+    float cx = x*0.0005 - 0.5 + 0.5 * sin(t*2);
+    float cy = y*0.0005 - 0.5 + 0.5 * cos(t*3.3333);
+    float p2 = sin(sqrt(cx*cx+cy*cy)*3+1);
+    float p = (p0 + p1 + p2);
 
-    // vec3 bgColorHsv = rgb2hsv(backgroundColor.rgb / 255.0);
-    // if (bgColorHsv.x < 0.01)
-    //   bgColorHsv.y += 0.1;
-    // bgColorHsv.x += p * 0.5;
-    // vec3 bgColorRgb = hsv2rgb(bgColorHsv);
-    // bg = vec4(bgColorRgb.rgb, backgroundColor.a);
+    vec3 bgColorHsv = rgb2hsv(backgroundColor.rgb / 255.0);
+    if (bgColorHsv.x < 0.01)
+      bgColorHsv.y += 0.1;
+    bgColorHsv.x += p * 0.5;
+    vec3 bgColorRgb = hsv2rgb(bgColorHsv);
+    bg = vec4(bgColorRgb.rgb, backgroundColor.a);
 
-    // vec3 textColorHsv = rgb2hsv(textColor / vec3(255.0, 255.0, 255.0));
-    // textColorHsv.y += 0.1;
-    // textColorHsv.x += p * 0.5;
-    // vec3 textColorRgb = hsv2rgb(textColorHsv);
-    // fg = textColorRgb;
+    vec3 textColorHsv = rgb2hsv(textColor / vec3(255.0, 255.0, 255.0));
+    textColorHsv.y += 0.1;
+    textColorHsv.x += p * 0.5;
+    vec3 textColorRgb = hsv2rgb(textColorHsv);
+    fg = textColorRgb;
 
 }
