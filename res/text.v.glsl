@@ -89,13 +89,14 @@ void main() {
     // Position of cell from top-left
     vec2 cellPosition = cellDim * gridCoords;
 
-    // fix your back
-    cellPosition.y = cellDim.y * maxlines - cellPosition.y;
+    // changes, uncomment as you wish
+    // flip lines
+    // cellPosition.y = cellDim.y * maxlines - cellPosition.y;
 
-    // far out, dude
-    float fadeScale = (maxlines - gridCoords.y) / maxlines;
-    cellPosition.x *= fadeScale;
-    projectionOffset.x += (1 - fadeScale);
+    // fade-out
+    // float fadeScale = (maxlines - gridCoords.y) / maxlines;
+    // cellPosition.x *= fadeScale;
+    // projectionOffset.x += (1 - fadeScale);
 
     vec2 finalPosition;
     vec2 glyphSize;
@@ -104,8 +105,8 @@ void main() {
         finalPosition = cellPosition + cellDim * position;
     } else {
         glyphSize = glyph.zw;
-        glyphSize = glyph.zw * fadeScale;
-        glyphSize = glyph.zw * fadeScale * (1.5 + 0.5 * sin(time + cellPosition.x / 10));
+        // glyphSize = glyph.zw * fadeScale;
+        // glyphSize = glyph.zw * fadeScale * (1.5 + 0.5 * sin(time + cellPosition.x / 10));
         glyphOffset = glyph.xy;
         glyphOffset.y = cellDim.y - glyphOffset.y;
         finalPosition = cellPosition + glyphSize * position + glyphOffset;
