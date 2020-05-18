@@ -113,8 +113,8 @@ void main() {
     }
 
     // wobble
-    finalPosition.x += 0.5 * sin(sin(finalPosition.x) + finalPosition.y * 0.1 * time);
-    finalPosition.y += 0.5 * sin(sin(finalPosition.y) + finalPosition.x * 0.1 * -time);
+    // finalPosition.x += 0.5 * sin(sin(finalPosition.x) + finalPosition.y * 0.1 * time);
+    // finalPosition.y += 0.5 * sin(sin(finalPosition.y) + finalPosition.x * 0.1 * -time);
 
     // animated wave
     finalPosition.y += 10 * sin((finalPosition.x + time * 30) * 0.05);
