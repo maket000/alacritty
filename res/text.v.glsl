@@ -41,7 +41,6 @@ uniform vec4 projection;
 uniform int backgroundPass;
 uniform float time;
 
-
 // hardcoding this because the main program is a nightmare.
 // change it based on how tall you screen, or face dire consequences
 int maxlines = 60;
